@@ -1,0 +1,18 @@
+extends layout 
+
+block content
+  h2 All My Contacts
+  table
+    thead
+      tr
+        th Name
+        th Phone Number
+    tbody
+      each contact in contacts
+        tr
+          td #{contact.lastName}, #{contact.firstName}
+          td= contact.phoneNumber
+    tfoot
+      tr
+        td(colspan="3")
+          a(href=`/contacts/new`) New Contact
