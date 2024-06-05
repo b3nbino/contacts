@@ -1,12 +1,19 @@
 doctype html
-html(lang="en")
+
+html(lang="en-US")
   head
-    meta(charset="UTF-8")
-    meta(name="viewport", content="width=device-width, initial-scale=1.0")
-    link(rel="stylesheet", href="/stylesheets/application.css")
     title My Contacts Manager
-  body 
-    header 
-      h1 My Contacts Manager 
-    main 
+    meta(charset="UTF-8")
+    link(rel="stylesheet" href="/stylesheets/application.css")
+
+  body
+    header
+      h1 My Contacts Manager
+
+    if errorMessages && errorMessages.length > 0
+      ul.flash
+        each message in errorMessages
+          li.error= message
+
+    main
       block content

@@ -133,6 +133,11 @@ button.cancel:hover {
   cursor: pointer;
 }
 
+div {
+  display: flex;
+  justify-content: center;
+}
+
 .flash {
   font-size: 1.25rem;
   font-weight: bold;

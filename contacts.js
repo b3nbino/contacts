@@ -62,10 +62,83 @@ app.get("/contacts/new", (req, res) => {
   res.render("new_contact");
 });
 
-app.post("/contacts/new", (req, res) => {
-  contactData.push({ ...req.body });
-  res.redirect("/contacts");
-});
+app.post(
+  "/contacts/new",
+  (req, res, next) => {
+    res.locals.errorMessages = [];
+    next();
+  },
+  (req, res, next) => {
+    if (req.body.firstName.length === 0) {
+      res.locals.errorMessages.push("First name is required.");
+    } else if (req.body.firstName.length > 25) {
+      res.locals.errorMessages.push(
+        "First name cannot be longer than 25 characters."
+      );
+    } else if (req.body.firstName.match(/[^a-z]/i)) {
+      res.locals.errorMessages.push("First name can only contain letters.");
+    }
+    next();
+  },
+  (req, res, next) => {
+    if (req.body.lastName.length === 0) {
+      res.locals.errorMessages.push("Last name is required.");
+    } else if (req.body.lastName.length > 25) {
+      res.locals.errorMessages.push(
+        "Last name cannot be longer than 25 characters."
+      );
+    } else if (req.body.lastName.match(/[^a-z]/i)) {
+      res.locals.errorMessages.push("Last name can only contain letters.");
+    }
+
+    next();
+  },
+  (req, res, next) => {
+    if (req.body.phoneNumber.length === 0) {
+      res.locals.errorMessages.push("Phone number is required.");
+    } else if (!req.body.phoneNumber.match(/\d\d\d-\d\d\d-\d\d\d\d/)) {
+      res.locals.errorMessages.push(
+        "Phone number must be formatted correctly."
+      );
+    }
+
+    next();
+  },
+  (req, res, next) => {
+    for (let i = 0; i < contactData.length; i++) {
+      if (
+        contactData[i].firstName === req.body.firstName.trim() &&
+        contactData[i].lastName === req.body.lastName.trim()
+      ) {
+        res.locals.errorMessages.push(
+          "Cannot add contact that already exists."
+        );
+      }
+    }
+    next();
+  },
+  (req, res, next) => {
+    if (res.locals.errorMessages.length > 0) {
+      res.render("new_contact", {
+        errorMessages: res.locals.errorMessages,
+        first: req.body.firstName,
+        last: req.body.lastName,
+        number: req.body.number,
+      });
+    } else {
+      next();
+    }
+  },
+  (req, res) => {
+    contactData.push({
+      firstName: req.body.firstName.trim(),
+      lastName: req.body.lastName.trim(),
+      phoneNumber: req.body.phoneNumber.trim(),
+    });
+
+    res.redirect("/contacts");
+  }
+);
 
 app.listen(3000, "localhost", () => {
   console.log("Listening to port 3000.");
