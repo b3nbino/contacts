@@ -1,6 +1,10 @@
 const express = require("express");
 const morgan = require("morgan");
 const { body, validationResult } = require("express-validator");
+const session = require("express-session");
+const store = require("connect-loki");
+
+const LokiStore = store(session);
 const app = express();
 
 let contactData = [
@@ -64,6 +68,22 @@ app.set("view engine", "pug");
 app.use(express.static("public"));
 app.use(express.urlencoded({ extended: false }));
 app.use(morgan("common"));
+
+app.use(
+  session({
+    cookie: {
+      httpOnly: true,
+      maxAge: 31 * 24 * 60 * 60 * 1000, // 31 days in milliseconds
+      path: "/",
+      secure: false,
+    },
+    name: "launch-school-contacts-manager-session-id",
+    resave: false,
+    saveUninitialized: true,
+    secret: "this is not very secure",
+    store: new LokiStore({}),
+  })
+);
 
 app.get("/", (req, res) => {
   res.redirect("/contacts");
