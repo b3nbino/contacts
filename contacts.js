@@ -42,6 +42,22 @@ const sortContacts = (contacts) => {
   });
 };
 
+const validateNames = (name, whichName) => {
+  return body(name)
+    .trim()
+    .isLength({ min: 1 })
+    .withMessage(`${whichName} name is required.`)
+    .bail()
+    .isLength({ max: 25 })
+    .withMessage(
+      `${whichName} name is too long. Maximum length is 25 characters.`
+    )
+    .isAlpha()
+    .withMessage(
+      `${whichName} name contains invalid characters. The name must be alphabetic.`
+    );
+};
+
 app.set("views", "./views");
 app.set("view engine", "pug");
 
@@ -66,24 +82,8 @@ app.get("/contacts/new", (req, res) => {
 app.post(
   "/contacts/new",
   [
-    body("firstName")
-      .trim()
-      .isLength({ min: 1 })
-      .withMessage("First name is required.")
-      .bail()
-      .isLength({ max: 25 })
-      .withMessage("First name cannot exceed 25 characters.")
-      .isAlpha()
-      .withMessage("First name can only contain letters."),
-    body("lastName")
-      .trim()
-      .isLength({ min: 1 })
-      .withMessage("Last name is required.")
-      .bail()
-      .isLength({ max: 25 })
-      .withMessage("Last name cannot exceed 25 characters.")
-      .isAlpha()
-      .withMessage("Last name can only contain letters."),
+    validateNames("firstName", "First"),
+    validateNames("lastName", "Last"),
     body("phoneNumber")
       .trim()
       .isLength({ min: 1 })
