@@ -10,10 +10,12 @@ html(lang="en-US")
     header
       h1 My Contacts Manager
 
-    if errorMessages && errorMessages.length > 0
-      ul.flash
-        each message in errorMessages
-          li.error= message
+    - let messageTypes = Object.keys(flash || {});
+    if messageTypes.length > 0
+      ul
+        each messageType in messageTypes
+          each message in flash[messageType]
+            li.flash(class=messageType)= message
 
     main
       block content

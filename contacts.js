@@ -3,11 +3,12 @@ const morgan = require("morgan");
 const { body, validationResult } = require("express-validator");
 const session = require("express-session");
 const store = require("connect-loki");
+const flash = require("express-flash");
 
 const LokiStore = store(session);
 const app = express();
 
-let contactData = [
+const contactData = [
   {
     firstName: "Mike",
     lastName: "Jones",
@@ -62,6 +63,10 @@ const validateNames = (name, whichName) => {
     );
 };
 
+const clone = (object) => {
+  return JSON.parse(JSON.stringify(object));
+};
+
 app.set("views", "./views");
 app.set("view engine", "pug");
 
@@ -85,13 +90,29 @@ app.use(
   })
 );
 
+app.use(flash());
+
+app.use((req, res, next) => {
+  if (!("contactData" in req.session)) {
+    req.session.contactData = clone(contactData);
+  }
+
+  next();
+});
+
+app.use((req, res, next) => {
+  res.locals.flash = req.session.flash;
+  delete req.session.flash;
+  next();
+});
+
 app.get("/", (req, res) => {
   res.redirect("/contacts");
 });
 
 app.get("/contacts", (req, res) => {
   res.render("contacts", {
-    contacts: sortContacts(contactData),
+    contacts: sortContacts(req.session.contactData),
   });
 });
 
@@ -116,8 +137,9 @@ app.post(
     let errors = validationResult(req);
 
     if (!errors.isEmpty()) {
+      errors.array().forEach((error) => req.flash("error", error.msg));
       res.render("new_contact", {
-        errorMessages: errors.array().map((err) => err.msg),
+        flash: req.flash(),
         firstName: req.body.firstName,
         lastName: req.body.lastName,
         phoneNumber: req.body.phoneNumber,
@@ -127,12 +149,13 @@ app.post(
     }
   },
   (req, res) => {
-    contactData.push({
+    req.session.contactData.push({
       firstName: req.body.firstName.trim(),
       lastName: req.body.lastName.trim(),
       phoneNumber: req.body.phoneNumber.trim(),
     });
 
+    req.flash("success", "Successfully added new contact!");
     res.redirect("/contacts");
   }
 );
